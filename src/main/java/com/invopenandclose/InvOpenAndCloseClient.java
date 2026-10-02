@@ -9,8 +9,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class InvOpenAndCloseClient implements ClientModInitializer {
-    private static final int DELAY_TICKS = 2;
-    private static final int OPEN_TICKS = 2;
+    private static final int DELAY_TICKS = 4;
+    private static final int OPEN_TICKS = 4;
 
     private int delayTicks;
     private int openTicks;
