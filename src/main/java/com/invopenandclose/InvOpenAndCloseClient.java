@@ -1,25 +1,52 @@
 package com.invopenandclose;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class InvOpenAndCloseClient implements ClientModInitializer {
-    private static final int DELAY_TICKS = 10;
+    private static final int OPEN_DELAY_TICKS = 10;
     private static final int OPEN_TICKS = 40;
+    private static final int SELL_DELAY_TICKS = 10;
 
     private int delayTicks;
     private int openTicks;
+    private int sellDelayTicks;
     private boolean inventoryFixActive;
+    private boolean sellEnabled;
+    private int sellPrice;
     private int lastSlot = -1;
     private int lastAnchorCount = 0;
 
     @Override
     public void onInitializeClient() {
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> {
+            dispatcher.register(ClientCommands.literal("ksell")
+                .then(ClientCommands.literal("on")
+                    .then(ClientCommands.argument("price", net.minecraft.commands.arguments.IntegerArgumentType.integer(1))
+                        .executes(context -> {
+                            sellEnabled = true;
+                            sellPrice = net.minecraft.commands.arguments.IntegerArgumentType.getInteger(context, "price");
+                            context.getSource().sendFeedback(Component.literal("KSell: ON | Price: " + sellPrice));
+                            return 1;
+                        })))
+                .then(ClientCommands.literal("off")
+                    .executes(context -> {
+                        sellEnabled = false;
+                        sellDelayTicks = 0;
+                        context.getSource().sendFeedback(Component.literal("KSell: OFF"));
+                        return 1;
+                    }))
+            );
+        });
+
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
     }
 
@@ -45,6 +72,18 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
             return;
         }
 
+        if (sellDelayTicks > 0) {
+            if (client.gui.screen() != null) {
+                return;
+            }
+
+            if (--sellDelayTicks <= 0 && sellEnabled) {
+                client.player.connection.sendCommand("ahset " + sellPrice);
+            }
+            lastAnchorCount = anchorCount;
+            return;
+        }
+
         if (delayTicks > 0) {
             if (client.gui.screen() != null) {
                 return;
@@ -55,6 +94,7 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
                 openTicks = OPEN_TICKS;
                 inventoryFixActive = true;
             }
+
             lastAnchorCount = anchorCount;
             return;
         }
@@ -64,7 +104,7 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
         }
 
         if (lastAnchorCount != 1 && anchorCount == 1) {
-            delayTicks = DELAY_TICKS;
+            delayTicks = OPEN_DELAY_TICKS;
         }
 
         lastAnchorCount = anchorCount;
@@ -79,18 +119,21 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
         if (!(client.gui.screen() instanceof InventoryScreen)) {
             client.gui.setScreen(null);
             inventoryFixActive = false;
+            sellDelayTicks = SELL_DELAY_TICKS;
             return;
         }
 
         if (--openTicks <= 0) {
             client.gui.setScreen(null);
             inventoryFixActive = false;
+            sellDelayTicks = SELL_DELAY_TICKS;
         }
     }
 
     private void resetTracking() {
         delayTicks = 0;
         openTicks = 0;
+        sellDelayTicks = 0;
         inventoryFixActive = false;
         lastSlot = -1;
         lastAnchorCount = 0;
