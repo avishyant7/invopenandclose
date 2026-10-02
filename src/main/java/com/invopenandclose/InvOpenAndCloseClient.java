@@ -9,12 +9,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class InvOpenAndCloseClient implements ClientModInitializer {
-    private static final int DELAY_TICKS = 4;
-    private static final int OPEN_TICKS = 4;
+    private static final int DELAY_TICKS = 10;
+    private static final int OPEN_TICKS = 40;
 
     private int delayTicks;
     private int openTicks;
-    private boolean watching = true;
     private boolean inventoryFixActive;
     private int lastSlot = -1;
     private int lastAnchorCount = 0;
@@ -64,7 +63,7 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
             return;
         }
 
-        if (watching && lastAnchorCount != 1 && anchorCount == 1) {
+        if (lastAnchorCount != 1 && anchorCount == 1) {
             delayTicks = DELAY_TICKS;
         }
 
