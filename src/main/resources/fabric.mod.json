@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "invopenandclose",
+  "version": "${version}",
+  "name": "Inv Open And Close",
+  "description": "Opens and closes the inventory after a new single Respawn Anchor appears in the selected hotbar slot.",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.invopenandclose.InvOpenAndCloseClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "fabric-api": ">=0.152.1+26.2"
+  }
+}
