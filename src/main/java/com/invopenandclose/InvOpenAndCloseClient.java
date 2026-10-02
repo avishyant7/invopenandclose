@@ -21,7 +21,7 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
     private int sellDelayTicks;
     private boolean inventoryFixActive;
     private boolean sellEnabled;
-    private int sellPrice;
+    private int sellAmount;
     private int lastSlot = -1;
     private int lastAnchorCount = 0;
 
@@ -30,11 +30,11 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> {
             dispatcher.register(ClientCommands.literal("ksell")
                 .then(ClientCommands.literal("on")
-                    .then(ClientCommands.argument("price", net.minecraft.commands.arguments.IntegerArgumentType.integer(1))
+                    .then(ClientCommands.argument("amount", net.minecraft.commands.arguments.IntegerArgumentType.integer(1))
                         .executes(context -> {
                             sellEnabled = true;
-                            sellPrice = net.minecraft.commands.arguments.IntegerArgumentType.getInteger(context, "price");
-                            context.getSource().sendFeedback(Component.literal("KSell: ON | Price: " + sellPrice));
+                            sellAmount = net.minecraft.commands.arguments.IntegerArgumentType.getInteger(context, "amount");
+                            context.getSource().sendFeedback(Component.literal("KSell: ON | Amount: " + sellAmount));
                             return 1;
                         })))
                 .then(ClientCommands.literal("off")
@@ -78,7 +78,7 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
             }
 
             if (--sellDelayTicks <= 0 && sellEnabled) {
-                client.player.connection.sendCommand("ahset " + sellPrice);
+                client.player.connection.sendCommand("ah sell " + sellAmount);
             }
             lastAnchorCount = anchorCount;
             return;
