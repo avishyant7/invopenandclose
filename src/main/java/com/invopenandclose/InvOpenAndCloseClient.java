@@ -30,10 +30,10 @@ public final class InvOpenAndCloseClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> {
             dispatcher.register(ClientCommands.literal("ksell")
                 .then(ClientCommands.literal("on")
-                    .then(ClientCommands.argument("amount", net.minecraft.commands.arguments.IntegerArgumentType.integer(1))
+                    .then(ClientCommands.argument("amount", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1))
                         .executes(context -> {
                             sellEnabled = true;
-                            sellAmount = net.minecraft.commands.arguments.IntegerArgumentType.getInteger(context, "amount");
+                            sellAmount = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "amount");
                             context.getSource().sendFeedback(Component.literal("KSell: ON | Amount: " + sellAmount));
                             return 1;
                         })))
